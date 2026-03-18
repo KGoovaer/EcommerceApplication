@@ -91,7 +91,7 @@ Before performing verification, check the PR labels for retry count:
    - Entity state machine verification: map all status transitions, verify all are documented
    - Generate consolidated gap report with severity classification (critical, high, medium, low)
 
-7. **Push verification artifacts** to the PR branch:
+7. **Push verification artifacts** via `push_to_pull_request_branch` (target PR: `${{ github.event.inputs.pr_number }}`):
    - `docs/verification/gap-report.md`
    - `docs/verification/table-usage-matrix.md`
    - `docs/verification/cross-domain-dependencies.md`
