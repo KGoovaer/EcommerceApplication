@@ -264,6 +264,18 @@ This registry catalogs every identified document across all phases of the Ecomme
 
 ---
 
+## Verification Artifact IDs
+
+*Source: `docs/verification/`*
+
+| ID | Name | Document | Status |
+|---|---|---|---|
+| GAP-001 | Gap Report | `docs/verification/gap-report.md` | ✅ Documented |
+| TUM-001 | Table Usage Matrix | `docs/verification/table-usage-matrix.md` | ✅ Documented |
+| CDD-001 | Cross-Domain Dependencies | `docs/verification/cross-domain-dependencies.md` | ✅ Documented |
+
+---
+
 ## ID Uniqueness Validation
 
 All IDs verified unique within their respective namespaces:
@@ -281,9 +293,10 @@ All IDs verified unique within their respective namespaces:
 | FF-* (Technical Flows) | 4 | None |
 | INT-* (Integrations) | 2 | None |
 | DIAG-* (Diagrams) | 1 | None |
+| GAP-* / TUM-* / CDD-* (Verification) | 3 | None |
 
-**Total documented artefacts: 133** across 11 namespaces. No ID conflicts detected.
+**Total documented artefacts: 136** across 12 namespaces. No ID conflicts detected.
 
 ---
 
-*Validated during coordination phase. Cross-reference with [Requirement Matrix](requirement-matrix.md) and [Flow-to-Component Map](flow-to-component-map.md).*
+*Validated during coordination phase (second pass, post-remediation). Cross-reference with [Requirement Matrix](requirement-matrix.md) and [Flow-to-Component Map](flow-to-component-map.md).*

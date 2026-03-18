@@ -301,7 +301,7 @@ laptop (1), tv (2), mobile (3), watch (4)
 ## DC-010: ViewList
 
 **Entity Class:** `com.entity.viewlist`  
-**DB Table:** `viewlist`  
+**DB Object:** `viewlist` — **DATABASE VIEW** (not a base table)  
 **Domain:** Product Catalogue  
 
 ### Attributes
@@ -315,8 +315,9 @@ laptop (1), tv (2), mobile (3), watch (4)
 | `Pimage` | `String` | Image filename |
 
 ### Business Rules
-- `viewlist` is a denormalised view/table aggregating product information for catalogue display.
-- Products are joined with brand and category to populate this table.
+- `viewlist` is a **SQL VIEW** (not a base table) — no INSERT, UPDATE, or DELETE operations exist anywhere in the codebase for this object.
+- The view aggregates product information by joining three underlying base tables: `product`, `brand`, and `category`.
+- Read-only: all catalogue display queries use `SELECT * FROM viewlist` via `DAO.viewproduct()`.
 
 ### Traceability
 - **Flows:** FL-005 (View Catalog), FL-006 (Browse by Category)

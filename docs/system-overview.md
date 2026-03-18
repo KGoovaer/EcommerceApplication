@@ -1,8 +1,8 @@
 # System Overview — EcommerceApp
 
 **Document ID:** SO-001  
-**Version:** 1.0  
-**Phase:** Coordination  
+**Version:** 1.1  
+**Phase:** Coordination (second pass, post-verification remediation)  
 **Traced To:** DIAG-001, INT-001, INT-002, All FUREQs  
 
 ---
