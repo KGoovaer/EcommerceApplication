@@ -54,7 +54,7 @@ This matrix maps every database table/view to the flows and DAO methods that rea
 | SELECT all | `SELECT * FROM viewlist` | `DAO2.getAllviewlist()` | `viewproduct*.jsp` | FL-005 |
 | SELECT by image | `SELECT * FROM viewlist WHERE Pimage = ?` | `DAO2.getSelecteditem(st)` | `selecteditem*.jsp` | FL-005 |
 
-**Documented:** ⚠️ DC-010 (MEDIUM gap — documented as a table, not a view)  
+**Documented:** ✅ DC-010 — `viewlist` correctly documented as a SQL VIEW joining `product`, `brand`, and `category`  
 **Notes:** `viewlist` is an SQL VIEW that joins `product`, `brand`, and `category`. No INSERT/UPDATE/DELETE operations exist or should exist on this object.
 
 ---
@@ -112,7 +112,7 @@ This matrix maps every database table/view to the flows and DAO methods that rea
 | DELETE | `DELETE FROM customer WHERE Name=? AND Email_Id=?` | `DAO.deleteCustomer(customer)` | `/deletecustomer` | FL-020 |
 
 **Documented:** ✅ DC-004, FUREQ-001, FUREQ-002, FF-001, FF-004  
-**Notes:** No server-side auth check on `/deletecustomer` servlet (HIGH gap — see gap report).
+**Notes:** No server-side auth check on `/deletecustomer` servlet. Documented in `NFUREQ-001-06`.
 
 ---
 
@@ -164,7 +164,7 @@ This matrix maps every database table/view to the flows and DAO methods that rea
 | DELETE (admin) | `DELETE FROM orders WHERE Order_Id=?` | `DAO2.removeorders(orders)` | `/remove_orders` | FL-017 |
 
 **Documented:** ✅ DC-007, FUREQ-005, FF-003  
-**Notes:** `Status` is always set to `"Processing"` on INSERT. No UPDATE to Status exists anywhere — order "cancellation" is a hard DELETE, not a status transition (HIGH gap — see gap report).
+**Notes:** `Status` is always set to `"Processing"` on INSERT. No UPDATE to Status exists anywhere — order "cancellation" is a hard DELETE, not a status transition. Documented in `DC-007` and `FUREQ-005`.
 
 ---
 
@@ -180,7 +180,7 @@ This matrix maps every database table/view to the flows and DAO methods that rea
 | UPDATE (customer, set date) | `UPDATE order_details SET Date=? WHERE Date IS NULL` | `DAO4.updateOrder_details2(od)` | `/payprocess` | FL-015 |
 | DELETE (admin) | `DELETE FROM order_details WHERE Date=? AND pimage=?` | `DAO5.removeorder_details(od)` | `/removetable_order_details` | FL-023 |
 
-**Documented:** ✅ DC-008, FUREQ-005, FF-003 (CRITICAL inaccuracies — see gap report)  
+**Documented:** ✅ DC-008, FUREQ-005, FF-003 — bulk INSERT-SELECT from cart and `WHERE Date IS NULL` UPDATE condition correctly documented  
 **Notes:** Rows start with `Date IS NULL` immediately after INSERT, then `Date` and `Name` are populated in a separate UPDATE. `order_details` rows are NOT deleted when a corresponding `orders` row is cancelled/deleted.
 
 ---
@@ -204,14 +204,14 @@ This matrix maps every database table/view to the flows and DAO methods that rea
 | `brand` | 1 | ✅ | — |
 | `category` | 1 | ✅ | — |
 | `product` | 1 | ✅ | No edit/delete documented (correct: not implemented) |
-| `viewlist` | 2 | ⚠️ Medium | Documented as table, is actually a DB VIEW |
+| `viewlist` | 2 | ✅ | Correctly documented as SQL VIEW (DC-010 updated) |
 | `tv` | 1 | ✅ | — |
 | `laptop` | 1 | ✅ | — |
 | `mobile` | 1 | ✅ | — |
 | `watch` | 1 | ✅ | — |
-| `customer` | 6 | ✅ | Auth missing on DELETE servlet |
+| `customer` | 6 | ✅ | Admin servlet auth gap documented in NFUREQ-001-06 |
 | `usermaster` | 1 | ✅ | — |
 | `cart` | 16 | ✅ | — |
-| `orders` | 6 | ⚠️ High | Status always "Processing"; cancellation = DELETE |
-| `order_details` | 7 | ⚠️ Critical | FF-003 documents wrong INSERT method and UPDATE condition |
+| `orders` | 6 | ✅ | Status/cancellation model documented in DC-007 and FUREQ-005 |
+| `order_details` | 7 | ✅ | Bulk INSERT-SELECT and WHERE Date IS NULL correctly documented in FF-003 |
 | `Contactus` | 3 | ✅ | — |

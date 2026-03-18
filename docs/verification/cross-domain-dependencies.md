@@ -70,7 +70,7 @@ This document maps bidirectional dependencies between the seven business domains
 - `DAO4.addOrder_details()`: `INSERT INTO order_details(...) SELECT * FROM cart WHERE Name IS NULL`  
 - `DAO4.addOrder_details2(st)`: `INSERT INTO order_details(...) SELECT * FROM cart WHERE Name=?`  
 - `DAO4.deletecart()` / `deletecart2(st)`: clears cart after order creation
-**Documented:** ⚠️ High gap — FF-003 documents this incorrectly as line-by-line INSERT (see gap report)  
+**Documented:** ✅ FL-007, FL-008, FUREQ-004, DC-006, FF-003 (bulk INSERT-SELECT from cart correctly documented)  
 
 ---
 
