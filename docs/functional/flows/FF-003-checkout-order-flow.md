@@ -23,12 +23,14 @@ ShippingAddress.jsp (form)
 ShippingAddress2 Servlet (com.servlet.ShippingAddress2)
   → @WebServlet("/ShippingAddress2"), @MultipartConfig
   → doPost():
-      String paymentmethod = request.getParameter("paymentmethod")
-      + capture: Name, Address, City, State, Country, Pincode
-      if "cash":
-          → response.sendRedirect("confirmpayment.jsp?Name=...&City=...&...")
-      else if "online":
-          → response.sendRedirect("confirmonline.jsp?Name=...&City=...&...")
+      String CName   = request.getParameter("CName")    // customer name
+      String City    = request.getParameter("City")
+      String Total   = request.getParameter("Total")    // total price (passed from JSP)
+      String CusName = request.getParameter("CusName")  // "empty" = guest
+      if cash radio selected (request.getParameter("cash") != null):
+          → response.sendRedirect("confirmpayment.jsp?CName=...&City=...&Total=...&CusName=...")
+      else if online radio selected (request.getParameter("online") != null):
+          → response.sendRedirect("confirmonline.jsp?CName=...&City=...&Total=...&CusName=...")
 ```
 
 **Note:** No DAO calls in `ShippingAddress2`; it is a pure routing servlet.
@@ -50,62 +52,72 @@ payprocess Servlet
   → @WebServlet("/payprocess")
   → doPost():
 
-  Step 1: Read session context
-    String cname = getCookieValue("cname")   // customer email (or null for guest)
-    String city  = request.getParameter("City")
-    String name  = request.getParameter("Name")
+  Step 1: Read request parameters
+    String CName   = request.getParameter("CName").trim()    // customer name from JSP
+    String CusName = request.getParameter("CusName")         // "empty" = guest
+    String City    = request.getParameter("City").trim()
+    String Total   = request.getParameter("Total")           // total price from JSP (NOT computed in servlet)
+    String N       = request.getParameter("N2").trim()       // cart owner identifier
 
-  Step 2: Validate cart not empty
+  Step 2: Validate city and total provided
+    if City.equals("null") || Total.equals("null"):
+        → response.sendRedirect("paymentfail.jsp?msgf=Select any item first.")
+        return
+
+  Step 3: Validate cart not empty (boolean check — no cart items fetched)
     DAO4 dao4 = new DAO4(DBConnect.getConn())
-    List<cart> cartItems = dao4.getorders(cname)
-    if cartItems.isEmpty():
-        → response.sendRedirect("paymentfail.jsp")   // "Add items to cart first"
+    // Guest path (CusName == "empty"):
+    //   boolean ok = dao4.checkcart()
+    //   → SELECT * FROM cart WHERE Name IS NULL  (returns true if any row exists)
+    // Customer path (CusName != "empty"):
+    //   boolean ok = dao4.checkcart2(N)
+    //   → SELECT * FROM cart WHERE Name=?  (returns true if any row exists)
+    // NOTE: These are boolean checks only — cart items are NOT fetched or iterated
+    if ok == false:
+        → response.sendRedirect("paymentfail.jsp?msgf=Add items to cart first")
         return
 
-  Step 3: Validate city provided
-    if city == null || city.isEmpty():
-        → response.sendRedirect("paymentfail.jsp")   // "Select any item first"
-        return
-
-  Step 4: Compute total price
-    double total = sum of (item.Price * item.Qty) for each cartItem
-
-  Step 5: Insert order header
+  Step 4: Insert order header
     orders o = new orders()
-    o.setCustomer_Name(cname)
-    o.setCity(city)
-    o.setTotal_Price(total)
+    o.setCustomer_Name(CName)
+    o.setCustomer_City(City)
+    o.setDate(currentDate)
+    o.setTotal_Price(Integer.parseInt(Total))
     o.setStatus("Processing")
-    int result1 = dao4.addorders(o)
-    → INSERT INTO orders (Customer_Name, City, Total_Price, Status) VALUES (?,?,?,?)
+    int result1 = dao4.addOrders(o)
+    → INSERT INTO orders (Customer_Name, Customer_City, Date, Total_Price, Status) VALUES (?,?,?,?,?)
     if result1 == 0 → response.sendRedirect("paymentfail.jsp")
 
-  Step 6: Insert order details (one per cart item)
-    for each cartItem in cartItems:
-        order_details od = new order_details()
-        od.setBrand_name(cartItem.getBrand_name())
-        od.setCat_name(cartItem.getCat_name())
-        od.setPro_name(cartItem.getPro_name())
-        od.setPrice(cartItem.getPrice())
-        od.setQty(cartItem.getQty())
-        od.setPro_image(cartItem.getPro_image())
-        int result2 = dao4.addorderdetails(od)
-        → INSERT INTO order_details (Brand_name,Cat_name,Pro_name,Price,Qty,Pro_image)
-               VALUES (?,?,?,?,?,?)
-        if result2 == 0 → response.sendRedirect("paymentfail.jsp")
+  Step 5: Bulk insert order details (INSERT-SELECT from cart — not a per-item loop)
+    // Guest path:
+    //   dao4.addOrder_details()
+    //   → INSERT INTO order_details(Name,bname,cname,pname,pprice,pquantity,pimage)
+    //        SELECT * FROM cart WHERE Name IS NULL
+    // Customer path:
+    //   dao4.addOrder_details2(N)
+    //   → INSERT INTO order_details(Name,bname,cname,pname,pprice,pquantity,pimage)
+    //        SELECT * FROM cart WHERE Name = ?
+    // Rows are inserted with Date IS NULL (Date is set in Step 7)
+    if result2 == 0 → response.sendRedirect("paymentfail.jsp")
 
-  Step 7: Delete cart items
-    int result3 = dao4.deletecart(cname)
-    → DELETE FROM cart WHERE Name=?    (or Name IS NULL for guest)
+  Step 6: Delete cart items
+    // Guest path:  dao4.deletecart()  → DELETE FROM cart WHERE Name IS NULL
+    // Customer path: dao4.deletecart2(N) → DELETE FROM cart WHERE Name = ?
     if result3 == 0 → response.sendRedirect("paymentfail.jsp")
 
-  Step 8: Update order details with date and customer name
-    o.setDate(currentDate)
-    int result4 = dao4.updateorderdetails(o)
-    → UPDATE order_details SET Date=?, Customer_Name=? WHERE Customer_Name IS NULL
+  Step 7: Update order details with date (and Name for guest)
+    order_details od = new order_details()
+    od.setDate(currentDate)
+    od.setName(N)
+    // Guest path:
+    //   dao4.updateOrder_details(od)
+    //   → UPDATE order_details SET Date=?, Name=? WHERE Date IS NULL
+    // Customer path:
+    //   dao4.updateOrder_details2(od)
+    //   → UPDATE order_details SET Date=? WHERE Date IS NULL
     if result4 == 0 → response.sendRedirect("paymentfail.jsp")
 
-  Step 9: Redirect to order history
+  Step 8: Redirect to order history
     → response.sendRedirect("orders.jsp")
 ```
 
@@ -155,11 +167,11 @@ Note: Associated order_details rows are NOT deleted on cancellation.
 
 | Table | Operations | DAO Method | Step |
 |---|---|---|---|
-| `cart` | SELECT (validate + fetch items) | `DAO4.getorders()` | Step 2 |
-| `orders` | INSERT | `DAO4.addorders()` | Step 5 |
-| `order_details` | INSERT (per item) | `DAO4.addorderdetails()` | Step 6 |
-| `cart` | DELETE | `DAO4.deletecart()` | Step 7 |
-| `order_details` | UPDATE | `DAO4.updateorderdetails()` | Step 8 |
+| `cart` | SELECT (boolean non-empty check) | `DAO4.checkcart()` / `DAO4.checkcart2(N)` | Step 3 |
+| `orders` | INSERT | `DAO4.addOrders()` | Step 4 |
+| `order_details` | INSERT-SELECT (bulk copy from cart) | `DAO4.addOrder_details()` / `DAO4.addOrder_details2(N)` | Step 5 |
+| `cart` | DELETE | `DAO4.deletecart()` / `DAO4.deletecart2(N)` | Step 6 |
+| `order_details` | UPDATE (set Date and Name) | `DAO4.updateOrder_details()` / `DAO4.updateOrder_details2()` | Step 7 |
 | `orders` | SELECT | JSP scriptlet | View history |
 | `order_details` | SELECT | JSP scriptlet | View details |
 | `orders` | DELETE | `DAO4.removeorders()` | Cancellation |
@@ -170,17 +182,17 @@ Note: Associated order_details rows are NOT deleted on cancellation.
 
 ```mermaid
 flowchart TD
-    A([POST /payprocess]) --> B{Cart empty?}
+    A([POST /payprocess]) --> B{City or Total == 'null'?}
     B -->|Yes| FAIL[paymentfail.jsp]
-    B -->|No| C{City provided?}
-    C -->|No| FAIL
-    C -->|Yes| D[Step 5: INSERT orders]
+    B -->|No| C{Cart empty?\ncheckcart / checkcart2}
+    C -->|Yes| FAIL
+    C -->|No| D[Step 4: INSERT orders]
     D -->|Fail| FAIL
-    D -->|OK| E[Step 6: INSERT order_details loop]
-    E -->|Any fail| FAIL
-    E -->|All OK| F[Step 7: DELETE cart]
+    D -->|OK| E[Step 5: INSERT-SELECT order_details from cart]
+    E -->|Fail| FAIL
+    E -->|OK| F[Step 6: DELETE cart]
     F -->|Fail| FAIL
-    F -->|OK| G[Step 8: UPDATE order_details]
+    F -->|OK| G[Step 7: UPDATE order_details Date/Name]
     G -->|Fail| FAIL
     G -->|OK| H([orders.jsp — success])
 

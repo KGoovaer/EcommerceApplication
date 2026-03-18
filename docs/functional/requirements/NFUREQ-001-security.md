@@ -83,7 +83,27 @@ This document captures the security-related non-functional characteristics of th
 
 ---
 
-### NFUREQ-001-06: No CSRF Protection
+### NFUREQ-001-06: Unauthenticated Admin-Only Endpoints (Zero Server-Side Validation)
+
+**Description:** Eight admin-only servlet endpoints perform no server-side cookie validation whatsoever. Any HTTP client can invoke them directly without supplying the `tname` cookie.
+
+**Affected Endpoints:**  
+| Servlet URL | Operation |
+|---|---|
+| `/addproduct` | Add a new product to catalogue |
+| `/deletecustomer` | Delete a customer account |
+| `/remove_orders` | Admin delete of any order |
+| `/remove_contactus` | Delete a contact enquiry |
+| `/removetable_cart` | Clear all cart records |
+| `/removetable_order_details` | Clear all order_details records |
+| `/removecarta` | Remove a specific admin cart entry |
+| `/removecartnulla` | Remove guest cart entries |
+
+**Risk Level:** CRITICAL (for an internet-facing deployment) — unauthenticated HTTP requests can permanently delete data or alter product catalogue.
+
+---
+
+### NFUREQ-001-07: No CSRF Protection
 
 **Description:** No Cross-Site Request Forgery (CSRF) tokens are used on any form.
 
@@ -102,4 +122,5 @@ This document captures the security-related non-functional characteristics of th
 | CSRF Protection | Not implemented | HIGH |
 | File Upload (extension) | Validated | LOW |
 | File Upload (content) | Not validated | MEDIUM |
-| Admin servlet auth | Not enforced | MEDIUM-HIGH |
+| Admin servlet auth (JSP-gated) | Not enforced at servlet layer | MEDIUM-HIGH |
+| 8 admin endpoints with zero auth | No validation at all | CRITICAL |

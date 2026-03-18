@@ -59,6 +59,7 @@ This catalog consolidates all 14 domain concepts discovered from the EcommerceAp
 - Category mapping is hardcoded: laptop→1, tv→2, mobile→3, watch→4.
 - Image file must be `.jpg`, `.bmp`, `.jpeg`, `.png`, or `.webp` and ≤ 10 MB.
 - Only admin users may create products; no update or delete endpoint exists.
+- `pquantity` (stock quantity) is **never decremented** when orders are placed — no `UPDATE` to the `product` table exists anywhere in the application. Stock counts displayed to users are not reduced by purchases.
 
 ### Traceability
 - **Flows:** FL-004 (Add Product), FL-005 (View Catalog), FL-006 (Browse by Category)
@@ -226,9 +227,10 @@ laptop (1), tv (2), mobile (3), watch (4)
 | `Status` | `String` | Always initialised as "Processing" |
 
 ### Business Rules
-- Orders are created only when the cart is non-empty.
-- Status is always "Processing" at creation; no order state machine exists.
-- Cancellation removes only the `orders` row, leaving `order_details` intact.
+- Orders are created only when the cart is non-empty (validated by `DAO4.checkcart()` / `DAO4.checkcart2(N)` boolean checks).
+- `Status` is **always** `"Processing"` at creation — **no code in the application ever changes this value**. There is no order state machine; shipped, delivered, and refunded states do not exist.
+- Order cancellation is a **hard DELETE** from the `orders` table (`DELETE FROM orders WHERE Order_Id=?`), not a status update.
+- Cancellation removes only the `orders` row — associated `order_details` rows are **not** deleted and become orphan records.
 
 ### Traceability
 - **Flows:** FL-015 (Payment), FL-016 (Customer Cancel), FL-017 (Admin Cancel), FL-024 (View Orders)
