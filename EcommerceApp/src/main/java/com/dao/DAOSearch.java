@@ -23,7 +23,7 @@ public class DAOSearch {
 			String keyword = "%" + (q != null ? q : "") + "%";
 
 			StringBuilder sql = new StringBuilder(
-				"SELECT * FROM viewlist WHERE (Bname LIKE ? OR Cname LIKE ? OR Pname LIKE ?)");
+				"SELECT Bname, Cname, Pname, Pprice, Pquantity, Pimage FROM viewlist WHERE (Bname LIKE ? OR Cname LIKE ? OR Pname LIKE ?)");
 			List<Object> params = new ArrayList<Object>();
 			params.add(keyword);
 			params.add(keyword);
@@ -49,12 +49,12 @@ public class DAOSearch {
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				v = new viewlist();
-				v.setBname(rs.getString(1));
-				v.setCname(rs.getString(2));
-				v.setPname(rs.getString(3));
-				v.setPprice(rs.getInt(4));
-				v.setPquantity(rs.getInt(5));
-				v.setPimage(rs.getString(6));
+				v.setBname(rs.getString("Bname"));
+				v.setCname(rs.getString("Cname"));
+				v.setPname(rs.getString("Pname"));
+				v.setPprice(rs.getInt("Pprice"));
+				v.setPquantity(rs.getInt("Pquantity"));
+				v.setPimage(rs.getString("Pimage"));
 				list.add(v);
 			}
 		} catch (Exception e) {

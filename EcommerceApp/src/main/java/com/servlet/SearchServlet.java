@@ -33,6 +33,9 @@ public class SearchServlet extends HttpServlet {
 		String maxPriceStr = request.getParameter("maxPrice");
 
 		if (q == null) q = "";
+		if (q.length() > 200) q = q.substring(0, 200);
+		if (brand != null && brand.length() > 100) brand = brand.substring(0, 100);
+		if (category != null && category.length() > 100) category = category.substring(0, 100);
 
 		int minPrice = 0;
 		int maxPrice = Integer.MAX_VALUE;

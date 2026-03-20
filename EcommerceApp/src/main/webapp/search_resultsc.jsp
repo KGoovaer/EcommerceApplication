@@ -2,6 +2,13 @@
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%!
+    private String escHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#x27;");
+    }
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,7 +32,7 @@ body,h1,h2,h3,h4,h5,h6,.w3-wide {font-family: "Montserrat", sans-serif;}
 	<h1>Search Results</h1>
 	<% String query = (String) request.getAttribute("query"); %>
 	<% if (query != null && !query.trim().isEmpty()) { %>
-	<h4>Results for: "<%= query %>"</h4>
+	<h4>Results for: "<%= escHtml(query) %>"</h4>
 	<% } %>
 	<br>
 </div>
@@ -52,10 +59,10 @@ body,h1,h2,h3,h4,h5,h6,.w3-wide {font-family: "Montserrat", sans-serif;}
 		<center>
 			<table>
 				<tr><th>
-					<a href='selecteditemc.jsp?Pn=<%= v.getPimage() %>'><img src=' images/<%= v.getPimage() %>' height=150px width=150px></a>
+					<a href='selecteditemc.jsp?Pn=<%= escHtml(v.getPimage()) %>'><img src=' images/<%= escHtml(v.getPimage()) %>' height=150px width=150px></a>
 				</th></tr><br>
 				<tr style='background-color: #ebe9eb'><th style='text-align: center'>
-					<a href='selecteditemc.jsp?Pn=<%= v.getPimage() %>'><%= v.getBname() %> <%= v.getPname() %></a>
+					<a href='selecteditemc.jsp?Pn=<%= escHtml(v.getPimage()) %>'><%= escHtml(v.getBname()) %> <%= escHtml(v.getPname()) %></a>
 				</th></tr>
 				<tr><th style='text-align: center'>Price: &#8377;<%= v.getPprice() %></th></tr>
 			</table>
