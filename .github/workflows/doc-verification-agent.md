@@ -17,8 +17,7 @@ permissions:
   issues: read
   actions: read
 checkout:
-  fetch: ["*"]
-  fetch-depth: 0
+  - fetch-depth: 0
 tools:
   github:
     toolsets: [default]
