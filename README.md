@@ -25,6 +25,71 @@ url: https://swapnilbamble1438.github.io/EcommerceApplication/
 - Tomcat v8.0+
 - SQLite Tools (Online or Offline Tool)
 
+### Running with Podman
+
+**Prerequisites:** Podman 4+ and the `mydatabase.db` file present in the `EcommerceApp/` directory.
+
+> **Note:** `podman compose` on many distros delegates to the `docker-compose` CLI plugin, which requires the Podman socket to be running. Use one of the two options below.
+
+#### Option A — Enable the Podman socket (recommended)
+
+Run once to enable the socket for your user session:
+```bash
+systemctl --user enable --now podman.socket
+```
+
+Then export the socket path so docker-compose can find it (add this to your `~/.bashrc` or `~/.profile` to make it permanent):
+```bash
+export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
+```
+
+Then from `EcommerceApp/`:
+```bash
+cd EcommerceApp/
+
+# First-time or after code changes:
+podman compose up --build
+
+# Subsequent runs:
+podman compose up
+```
+
+#### Option B — Use `podman-compose` (no socket needed)
+
+Install the native Podman compose tool:
+```bash
+pip3 install --user podman-compose
+```
+
+Then from `EcommerceApp/`:
+```bash
+cd EcommerceApp/
+
+# First-time or after code changes:
+podman-compose up --build
+
+# Subsequent runs:
+podman-compose up
+```
+
+---
+
+- App will be available at: **http://localhost:8080**
+- The SQLite database is bind-mounted from `EcommerceApp/mydatabase.db` into the container — changes persist on the host.
+- Uploaded product images are stored in a named Podman volume (`product_images`) and survive container restarts.
+
+To stop the app:
+```bash
+podman-compose down   # or: podman compose down
+```
+
+To stop and also delete the named image volume:
+```bash
+podman-compose down -v   # or: podman compose down -v
+```
+
+---
+
 ### Steps To Import And Run The Project in Eclipse EE
 - In Eclipse
 - Click on File
