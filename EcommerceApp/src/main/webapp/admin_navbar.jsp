@@ -46,6 +46,11 @@
 	<a href="aboutusa.jsp" class="w3-bar-item w3-button"  >About Us</a>&ensp;
 	
 	</div>
+	<br>
+	<form method="get" action="search" style="display:inline;">
+		<input type="text" name="q" placeholder="Search products..." style="padding:4px 8px; width:220px;">
+		<button type="submit" class="w3-button w3-dark-grey" style="padding:4px 10px;">Search</button>
+	</form>
 	<hr>
 
 	
